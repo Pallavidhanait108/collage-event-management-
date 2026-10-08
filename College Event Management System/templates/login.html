@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Login | College Events{% endblock %}
+{% block description %}Log in to register for college events, track your registrations and share feedback.{% endblock %}
+
+{% block content %}
+<div class="auth">
+  <aside class="auth__panel">
+    <p class="eyebrow">Welcome back</p>
+    <p class="auth__quote">Your seat, your schedule, your say.</p>
+    <ul class="auth__points">
+      <li>{{ icon('ticket') }}<span>See every event you've registered for in one place.</span></li>
+      <li>{{ icon('calendar') }}<span>Never miss a date with a personal dashboard.</span></li>
+      <li>{{ icon('message') }}<span>Rate events and tell organisers what worked.</span></li>
+    </ul>
+  </aside>
+
+  <section class="auth__form" aria-labelledby="login-title">
+    <div class="auth__card">
+      <h1 id="login-title">Login</h1>
+      <p class="auth__sub">Enter your college account details to continue.</p>
+
+      <form method="post" action="{{ url_for('login') }}" id="login-form" data-validate novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ form.next }}">
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required
+                 data-label="Email" value="{{ form.email }}" aria-describedby="email-error" placeholder="you@college.com">
+          <p class="field__error" id="email-error" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="input-affix">
+            <input id="password" name="password" type="password" autocomplete="current-password" required
+                   data-label="Password" aria-describedby="password-error">
+            <button class="affix-btn" type="button" data-toggle-password="password" aria-label="Show password" aria-pressed="false">
+              <span class="affix-btn__show">{{ icon('eye') }}</span>
+              <span class="affix-btn__hide">{{ icon('eye-off') }}</span>
+            </button>
+          </div>
+          <p class="field__error" id="password-error" role="alert"></p>
+        </div>
+
+        <button class="btn btn--primary btn--lg btn--block" id="login-submit" type="submit">Login</button>
+      </form>
+
+      <p class="auth__switch">Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+    </div>
+  </section>
+</div>
+{% endblock %}

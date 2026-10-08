@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% from "_macros.html" import event_card with context %}
+
+{# Student dashboard. Admins are sent to /admin/dashboard (see admin_dashboard.html). #}
+
+{% block title %}Dashboard | College Events{% endblock %}
+{% block description %}Your College Events dashboard.{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div class="container page-head__inner">
+    <div>
+      <p class="eyebrow">Student dashboard</p>
+      <h1>Welcome, {{ current_user.name }}</h1>
+    </div>
+    <div class="page-head__actions">
+      <a class="btn btn--primary" id="dash-browse" href="{{ url_for('events') }}">Browse events {{ icon('arrow') }}</a>
+      <a class="btn btn--outline" id="dash-feedback" href="{{ url_for('feedback') }}">Give feedback</a>
+    </div>
+  </div>
+</section>
+
+<div class="container dash">
+  <dl class="stat-row" aria-label="Overview">
+    <div class="stat"><dt>Upcoming Events</dt><dd>{{ stats.upcoming }}</dd></div>
+    <div class="stat"><dt>My Registrations</dt><dd>{{ stats.registered }}</dd></div>
+    <div class="stat"><dt>Available Events</dt><dd>{{ stats.available }}</dd></div>
+    <div class="stat"><dt>Feedback Given</dt><dd>{{ stats.feedback }}</dd></div>
+  </dl>
+
+  <section class="block" aria-labelledby="upcoming-title">
+    <div class="block__head">
+      <h2 class="block__title" id="upcoming-title">Upcoming events</h2>
+      <a class="link-arrow" href="{{ url_for('events') }}">View all {{ icon('arrow') }}</a>
+    </div>
+    {% if upcoming %}
+      <div class="card-grid">
+        {% for e in upcoming %}{{ event_card(e, registered_ids) }}{% endfor %}
+      </div>
+    {% else %}
+      <div class="empty"><h3>Nothing scheduled</h3><p>New events will appear here as soon as they're published.</p></div>
+    {% endif %}
+  </section>
+
+  <section class="block" aria-labelledby="mine-title">
+    <h2 class="block__title" id="mine-title">My registered events</h2>
+    {% if my_events %}
+      <div class="table-wrap">
+        <table class="table table--stack" id="my-events-table">
+          <thead>
+            <tr>
+              <th scope="col">Event Name</th>
+              <th scope="col">Date</th>
+              <th scope="col">Venue</th>
+              <th scope="col">Registration Date</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in my_events %}
+              <tr>
+                <td data-label="Event Name">
+                  <a class="table__primary" href="{{ url_for('event_detail', event_id=e.id) }}">{{ e.title }}</a>
+                  {% if e.is_past %}<span class="badge">Ended</span>{% endif %}
+                </td>
+                <td data-label="Date">{{ e.date|fdate }}, {{ e.time|ftime }}</td>
+                <td data-label="Venue">{{ e.venue }}</td>
+                <td data-label="Registered">{{ e.registered_at|fdate }}</td>
+                <td class="table__actions">
+                  <a class="btn btn--outline btn--sm" href="{{ url_for('event_detail', event_id=e.id) }}">View Event</a>
+                  {% if e.is_past %}
+                    <a class="btn btn--ghost btn--sm" href="{{ url_for('feedback', event=e.id) }}">Review</a>
+                  {% else %}
+                    <form method="post" action="{{ url_for('cancel_registration', event_id=e.id) }}" data-confirm="Cancel your registration for {{ e.title }}?">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="btn btn--ghost btn--sm" type="submit">Cancel</button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty">
+        <h3>You haven't registered for anything yet</h3>
+        <p>Find an event you like and reserve your seat.</p>
+        <a class="btn btn--primary" href="{{ url_for('events') }}">Browse events</a>
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

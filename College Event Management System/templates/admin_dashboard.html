@@ -1,0 +1,63 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Dashboard | Admin{% endblock %}
+{% block description %}Admin dashboard for the College Event Management System.{% endblock %}
+{% block admin_eyebrow %}Admin dashboard{% endblock %}
+{% block admin_heading %}Welcome, {{ current_user.name }}{% endblock %}
+
+{% block admin_content %}
+  <dl class="stat-grid" aria-label="Overview">
+    <div class="stat"><dt>Total Events</dt><dd id="stat-events">{{ stats.events }}</dd></div>
+    <div class="stat"><dt>Upcoming Events</dt><dd id="stat-upcoming">{{ stats.upcoming }}</dd></div>
+    <div class="stat"><dt>Total Students</dt><dd id="stat-students">{{ stats.students }}</dd></div>
+    <div class="stat"><dt>Total Registrations</dt><dd id="stat-registrations">{{ stats.registrations }}</dd></div>
+    <div class="stat"><dt>Total Feedback</dt><dd id="stat-feedback">{{ stats.feedback }}</dd></div>
+  </dl>
+
+  <div class="split">
+    <section class="block" aria-labelledby="fill-title">
+      <div class="block__head">
+        <h2 class="block__title" id="fill-title">Upcoming events: seats filled</h2>
+        <a class="link-arrow" href="{{ url_for('admin_events', when='upcoming') }}">All {{ icon('arrow') }}</a>
+      </div>
+      {% if upcoming %}
+        <ul class="fill-list">
+          {% for e in upcoming %}
+            <li>
+              <div class="fill-list__top">
+                <a href="{{ url_for('admin_event_view', event_id=e.id) }}">{{ e.title }}</a>
+                <span>{{ e.registered_count }} / {{ e.capacity }}</span>
+              </div>
+              <div class="meter" aria-hidden="true"><span style="--fill: {{ e.percent_filled }}%"></span></div>
+              <p class="fill-list__meta">{{ e.date|fdate }} &middot; {{ e.venue }}{% if e.is_full %} &middot; Full{% endif %}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">No upcoming events. <a href="{{ url_for('add_event') }}">Add one</a>.</p>
+      {% endif %}
+    </section>
+
+    <section class="block" aria-labelledby="recent-title">
+      <div class="block__head">
+        <h2 class="block__title" id="recent-title">Recent registrations</h2>
+        <a class="link-arrow" href="{{ url_for('admin_registrations') }}">All {{ icon('arrow') }}</a>
+      </div>
+      {% if recent %}
+        <ul class="feed">
+          {% for r in recent %}
+            <li>
+              <span class="avatar" aria-hidden="true">{{ r.student_name[:1]|upper }}</span>
+              <div>
+                <p><strong>{{ r.student_name }}</strong> registered for <a href="{{ url_for('admin_event_registrations', event_id=r.event_id) }}">{{ r.title }}</a></p>
+                <small>{{ r.registered_at|fdate }}</small>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">No registrations yet.</p>
+      {% endif %}
+    </section>
+  </div>
+{% endblock %}

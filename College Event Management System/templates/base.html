@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}College Event Management System{% endblock %}</title>
+  <meta name="description" content="{% block description %}Discover, register for and review the events, workshops and competitions happening at your college.{% endblock %}">
+  <meta name="theme-color" content="#F5F1E8">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='5' width='26' height='24' fill='%23F5F1E8' stroke='%2315171C' stroke-width='2.5'/%3E%3Crect x='3' y='5' width='26' height='8' fill='%23C2381A'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+  {# Icon sprite: icons are drawn with {{ icon('name') }} #}
+  <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="1"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+      <symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+      <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+      <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
+      <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
+      <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-6.4 0-10-7-10-7a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+      <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 17v2M13 11v2"/></symbol>
+      <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+      <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
+    </defs>
+  </svg>
+
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  {% set endpoint = request.endpoint %}
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="{{ url_for('index') }}" aria-label="College Events, home">
+        <span class="brand__mark" aria-hidden="true"></span>
+        <span class="brand__name">College Events</span>
+      </a>
+
+      <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false"
+              aria-controls="site-nav" aria-label="Open menu">
+        <span class="nav-toggle__open">{{ icon('menu') }}</span>
+        <span class="nav-toggle__close">{{ icon('x') }}</span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" aria-label="Primary">
+        <ul class="site-nav__list">
+          {% if not current_user %}
+            <li><a href="{{ url_for('index') }}" {% if endpoint == 'index' %}aria-current="page"{% endif %}>Home</a></li>
+            <li><a href="{{ url_for('events') }}" {% if endpoint in ('events', 'event_detail') %}aria-current="page"{% endif %}>Events</a></li>
+            <li><a href="{{ url_for('login') }}" {% if endpoint == 'login' %}aria-current="page"{% endif %}>Login</a></li>
+            <li><a class="btn btn--dark btn--sm" id="nav-register" href="{{ url_for('register') }}">Register</a></li>
+          {% elif current_user.role == 'admin' %}
+            <li><a href="{{ url_for('admin_dashboard') }}" {% if endpoint in ('dashboard', 'admin_dashboard') %}aria-current="page"{% endif %}>Dashboard</a></li>
+            <li><a href="{{ url_for('admin_events') }}" {% if endpoint in ('admin_events', 'admin_event_view', 'admin_event_registrations', 'admin_registrations', 'admin_feedback', 'admin_users', 'add_event', 'edit_event') %}aria-current="page"{% endif %}>Manage Events</a></li>
+            <li><a href="{{ url_for('events') }}" {% if endpoint in ('events', 'event_detail') %}aria-current="page"{% endif %}>Events</a></li>
+            <li>
+              <form method="post" action="{{ url_for('logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="nav-logout" id="nav-logout" type="submit">{{ icon('logout') }}<span>Logout</span></button>
+              </form>
+            </li>
+          {% else %}
+            <li><a href="{{ url_for('dashboard') }}" {% if endpoint == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a></li>
+            <li><a href="{{ url_for('events') }}" {% if endpoint in ('events', 'event_detail') %}aria-current="page"{% endif %}>Events</a></li>
+            <li><a href="{{ url_for('feedback') }}" {% if endpoint == 'feedback' %}aria-current="page"{% endif %}>Feedback</a></li>
+            <li>
+              <form method="post" action="{{ url_for('logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="nav-logout" id="nav-logout" type="submit">{{ icon('logout') }}<span>Logout</span></button>
+              </form>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="container flash-stack" aria-live="polite">
+        {% set flash_icons = {'success': 'check-circle', 'error': 'alert', 'warning': 'alert', 'info': 'info'} %}
+        {% for category, message in messages %}
+          <div class="flash flash--{{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">
+            {{ icon(flash_icons.get(category, 'info')) }}
+            <p>{{ message }}</p>
+            <button class="flash__close" type="button" aria-label="Dismiss message">{{ icon('x') }}</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main id="main" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__top">
+        <p class="site-footer__title">College Event<br>Management System</p>
+        <div class="site-footer__cols">
+          <div>
+            <h2 class="site-footer__heading">Explore</h2>
+            <ul>
+              <li><a href="{{ url_for('index') }}">Home</a></li>
+              <li><a href="{{ url_for('events') }}">All events</a></li>
+              {% if current_user %}
+                <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+              {% endif %}
+            </ul>
+          </div>
+          <div>
+            <h2 class="site-footer__heading">Account</h2>
+            <ul>
+              {% if current_user %}
+                <li><a href="{{ url_for('dashboard') }}">Signed in as {{ current_user.name }}</a></li>
+              {% else %}
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+                <li><a href="{{ url_for('register') }}">Create account</a></li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      <p class="site-footer__legal">
+        <span>College Event Management System</span>
+        <span>&copy; {{ current_year }} College Name</span>
+      </p>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+</body>
+</html>

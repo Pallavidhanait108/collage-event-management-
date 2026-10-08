@@ -1,0 +1,46 @@
+{% extends "admin_base.html" %}
+{% from "_macros.html" import status_badge %}
+
+{% block title %}Registrations: {{ event.title }} | Admin{% endblock %}
+{% block admin_eyebrow %}Event registrations{% endblock %}
+{% block admin_heading %}{{ event.title }}{% endblock %}
+{% block admin_actions %}
+  <a class="btn btn--outline" href="{{ url_for('admin_event_view', event_id=event.id) }}">{{ icon('eye') }}Event details</a>
+  <a class="btn btn--outline" href="{{ url_for('admin_events') }}">{{ icon('arrow-left') }}All events</a>
+{% endblock %}
+
+{% block admin_content %}
+  <p class="badge-row">{{ status_badge(event) }}</p>
+  <dl class="stat-grid stat-grid--3" aria-label="Seats">
+    <div class="stat"><dt>Total Capacity</dt><dd id="seat-capacity">{{ event.capacity }}</dd></div>
+    <div class="stat"><dt>Total Registered</dt><dd id="seat-registered">{{ event.registered_count }}</dd></div>
+    <div class="stat"><dt>Available Seats</dt><dd id="seat-available">{{ event.available }}</dd></div>
+  </dl>
+  <div class="meter meter--wide" aria-hidden="true"><span style="--fill: {{ event.percent_filled }}%"></span></div>
+
+  <h2 class="block__title block__title--spaced">Registered students</h2>
+  {% if rows %}
+    <div class="table-wrap">
+      <table class="table table--stack" id="event-registrations-table">
+        <thead>
+          <tr>
+            <th scope="col">Student</th>
+            <th scope="col">Email</th>
+            <th scope="col">Registered</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              <td data-label="Student"><span class="table__primary">{{ r.student_name }}</span></td>
+              <td data-label="Email">{{ r.email }}</td>
+              <td data-label="Registered">{{ r.registered_at|fdate }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty"><h3>No registrations yet</h3><p>Students who register for this event will appear here.</p></div>
+  {% endif %}
+{% endblock %}

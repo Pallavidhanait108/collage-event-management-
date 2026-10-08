@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{# Layout shared by every admin page: sidebar + heading. Children fill the blocks below. #}
+
+{% block body_class %}is-admin{% endblock %}
+
+{% block content %}
+{% set ep = request.endpoint %}
+<div class="container admin-shell">
+  <aside class="admin-sidebar" aria-label="Admin navigation">
+    <p class="admin-sidebar__label">Admin panel</p>
+    <ul class="admin-nav">
+      <li><a id="side-dashboard" href="{{ url_for('admin_dashboard') }}" {% if ep == 'admin_dashboard' %}aria-current="page"{% endif %}>{{ icon('grid') }}<span>Dashboard</span></a></li>
+      <li><a id="side-events" href="{{ url_for('admin_events') }}" {% if ep in ('admin_events', 'admin_event_view', 'admin_event_registrations', 'edit_event') %}aria-current="page"{% endif %}>{{ icon('calendar') }}<span>Manage Events</span></a></li>
+      <li><a id="side-add" href="{{ url_for('add_event') }}" {% if ep == 'add_event' %}aria-current="page"{% endif %}>{{ icon('plus') }}<span>Add Event</span></a></li>
+      <li><a id="side-registrations" href="{{ url_for('admin_registrations') }}" {% if ep == 'admin_registrations' %}aria-current="page"{% endif %}>{{ icon('ticket') }}<span>Registrations</span></a></li>
+      <li><a id="side-feedback" href="{{ url_for('admin_feedback') }}" {% if ep == 'admin_feedback' %}aria-current="page"{% endif %}>{{ icon('message') }}<span>Feedback</span></a></li>
+      <li><a id="side-users" href="{{ url_for('admin_users') }}" {% if ep == 'admin_users' %}aria-current="page"{% endif %}>{{ icon('users') }}<span>Users</span></a></li>
+      <li class="admin-nav__sep" role="separator"></li>
+      <li><a id="side-site" href="{{ url_for('events') }}">{{ icon('eye') }}<span>View Site</span></a></li>
+      <li>
+        <form method="post" action="{{ url_for('logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" id="side-logout">{{ icon('logout') }}<span>Logout</span></button>
+        </form>
+      </li>
+    </ul>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-head">
+      <div>
+        <p class="eyebrow">{% block admin_eyebrow %}Admin{% endblock %}</p>
+        <h1>{% block admin_heading %}{% endblock %}</h1>
+      </div>
+      <div class="page-head__actions">
+        {% block admin_actions %}
+          <a class="btn btn--primary" id="admin-add-event" href="{{ url_for('add_event') }}">{{ icon('plus') }}Add Event</a>
+        {% endblock %}
+      </div>
+    </header>
+
+    {% block admin_content %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

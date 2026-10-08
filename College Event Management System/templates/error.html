@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | College Events{% endblock %}
+
+{% block content %}
+<section class="error-page">
+  <div class="container error-page__inner">
+    <p class="error-page__code" aria-hidden="true">{{ code }}</p>
+    <div>
+      <h1>{{ title }}</h1>
+      <p class="lede">{{ message }}</p>
+      <div class="hero__actions">
+        <a class="btn btn--primary btn--lg" id="error-home" href="{{ url_for('index') }}">Go Home</a>
+        {% if current_user %}
+          <a class="btn btn--outline btn--lg" href="{{ url_for('dashboard') }}">Dashboard</a>
+        {% else %}
+          <a class="btn btn--outline btn--lg" href="{{ url_for('events') }}">Browse events</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

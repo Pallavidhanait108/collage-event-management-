@@ -1,0 +1,88 @@
+{# Shared template pieces: event card and star display. #}
+
+{% macro stars(value) %}
+  <span class="stars" role="img" aria-label="{{ value }} out of 5 stars">
+    {% for i in range(1, 6) %}
+      <svg class="icon stars__star{{ ' is-on' if i <= value else '' }}" aria-hidden="true" focusable="false"><use href="#i-star"></use></svg>
+    {% endfor %}
+  </span>
+{% endmacro %}
+
+{% macro seats(e) %}
+  {% if e.is_past %}
+    <p class="seats seats--ended">Event ended</p>
+  {% elif e.is_full %}
+    <p class="seats seats--full">Event Full</p>
+  {% else %}
+    <p class="seats{{ ' seats--low' if e.percent_filled >= 80 else '' }}">
+      <strong>{{ e.available }}</strong> of {{ e.capacity }} seats available
+    </p>
+  {% endif %}
+  <div class="meter" aria-hidden="true"><span style="--fill: {{ e.percent_filled }}%"></span></div>
+{% endmacro %}
+
+{% macro event_card(e, registered_ids) %}
+  {% set detail_url = url_for('event_detail', event_id=e.id) %}
+  <article class="event-card cat-{{ e.category|lower }}{{ ' is-past' if e.is_past else '' }}"
+           data-title="{{ e.title|lower }}"
+           data-category="{{ e.category }}"
+           data-date="{{ e.date }}"
+           data-search="{{ (e.title ~ ' ' ~ e.venue ~ ' ' ~ e.organizer ~ ' ' ~ e.description)|lower }}">
+    <a class="event-card__cover{{ ' has-image' if e.image else '' }}" href="{{ detail_url }}" tabindex="-1" aria-hidden="true">
+      {% if e.image %}<img class="event-card__img" src="{{ e.image }}" alt="" loading="lazy">{% endif %}
+      <span class="event-card__date"><strong>{{ e.date|day }}</strong><span>{{ e.date|month }}</span></span>
+      <span class="event-card__cat">{{ e.category }}</span>
+    </a>
+
+    <div class="event-card__body">
+      <h3 class="event-card__title"><a href="{{ detail_url }}">{{ e.title }}</a></h3>
+      <ul class="meta-list">
+        <li>{{ icon('calendar') }}<span>{{ e.date|fdate }}</span></li>
+        <li>{{ icon('clock') }}<span>{{ e.time|ftime }}</span></li>
+        <li>{{ icon('pin') }}<span>{{ e.venue }}</span></li>
+        <li>{{ icon('user') }}<span>{{ e.organizer }}</span></li>
+      </ul>
+    </div>
+
+    <div class="event-card__foot">
+      {{ seats(e) }}
+      <div class="event-card__actions">
+        <a class="btn btn--outline btn--sm" href="{{ detail_url }}">View Details</a>
+        {% if e.is_past %}
+          {# nothing to register for #}
+        {% elif current_user and current_user.role == 'admin' %}
+          <a class="btn btn--dark btn--sm" href="{{ url_for('edit_event', event_id=e.id) }}">{{ icon('edit') }}Edit</a>
+        {% elif e.id in registered_ids %}
+          <span class="badge badge--ok">{{ icon('check') }}Registered</span>
+        {% elif e.is_full %}
+          <button class="btn btn--sm" type="button" disabled>Event Full</button>
+        {% elif current_user %}
+          <form method="post" action="{{ url_for('register_event', event_id=e.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+            <button class="btn btn--primary btn--sm" type="submit">Register</button>
+          </form>
+        {% else %}
+          <a class="btn btn--primary btn--sm" href="{{ url_for('login', next=detail_url) }}">Register</a>
+        {% endif %}
+      </div>
+    </div>
+  </article>
+{% endmacro %}
+
+{# Admin: Upcoming / Ongoing / Completed status plus a Full badge when no seats are left. #}
+{% macro status_badge(e) %}
+  <span class="badge badge--{{ e.status|lower }}">{{ e.status }}</span>
+  {% if e.is_full and e.status != 'Completed' %}<span class="badge badge--full">Full</span>{% endif %}
+{% endmacro %}
+
+{# Admin: Previous / Next links that keep the current search and filters. #}
+{% macro pager(page, pages, endpoint, args) %}
+  {% if pages > 1 %}
+    <nav class="pager" aria-label="Pagination">
+      {% if page > 1 %}<a class="btn btn--outline btn--sm" href="{{ url_for(endpoint, page=page - 1, **args) }}">Previous</a>{% endif %}
+      <span class="pager__info">Page {{ page }} of {{ pages }}</span>
+      {% if page < pages %}<a class="btn btn--outline btn--sm" href="{{ url_for(endpoint, page=page + 1, **args) }}">Next</a>{% endif %}
+    </nav>
+  {% endif %}
+{% endmacro %}

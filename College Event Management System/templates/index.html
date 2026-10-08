@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% from "_macros.html" import event_card with context %}
+
+{% block title %}College Events | Discover. Participate. Celebrate.{% endblock %}
+{% block description %}Explore the latest events, workshops, competitions and activities happening at your college, and reserve your seat in a few clicks.{% endblock %}
+
+{% block content %}
+<section class="hero" aria-labelledby="hero-title">
+  <div class="container hero__grid">
+    <div class="hero__copy">
+      <p class="eyebrow eyebrow--rule">College event portal</p>
+      <h1 class="display" id="hero-title">Discover. Participate. <em>Celebrate.</em></h1>
+      <p class="lede">Explore the latest events, workshops, competitions and activities happening at your college.</p>
+      <div class="hero__actions">
+        <a class="btn btn--primary btn--lg" id="hero-explore" href="{{ url_for('events') }}">Explore Events {{ icon('arrow') }}</a>
+        {% if not current_user %}
+          <a class="btn btn--ghost btn--lg" id="hero-register" href="{{ url_for('register') }}">Create account</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="hero__art">
+      {% if next_event %}
+        <a class="ticket cat-{{ next_event.category|lower }}" id="hero-next-event" href="{{ url_for('event_detail', event_id=next_event.id) }}">
+          <span class="ticket__label">Up next</span>
+          <span class="ticket__date"><strong>{{ next_event.date|day }}</strong><span>{{ next_event.date|month }}</span></span>
+          <span class="ticket__title">{{ next_event.title }}</span>
+          <span class="ticket__meta">{{ next_event.time|ftime }} &middot; {{ next_event.venue }}</span>
+          <span class="ticket__foot">
+            <span>{{ next_event.category }}</span>
+            <span>{% if next_event.is_full %}Event Full{% else %}{{ next_event.available }} seats left{% endif %}</span>
+          </span>
+        </a>
+        <span class="ticket ticket--back" aria-hidden="true"></span>
+      {% else %}
+        <div class="ticket ticket--empty">
+          <span class="ticket__label">Up next</span>
+          <span class="ticket__title">New events are on the way.</span>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="category-strip" aria-label="Browse by category">
+  <div class="container">
+    <ul class="category-strip__list">
+      {% for name in categories %}
+        <li>
+          <a href="{{ url_for('events', category=name) }}">
+            <span>{{ name }}</span>
+            <small>{{ category_counts[name] }}</small>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="featured-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Featured events</p>
+        <h2 id="featured-title">Coming up on campus</h2>
+      </div>
+      <a class="link-arrow" href="{{ url_for('events') }}">View all events {{ icon('arrow') }}</a>
+    </div>
+
+    {% if featured %}
+      <div class="card-grid">
+        {% for e in featured %}{{ event_card(e, registered_ids) }}{% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">
+        <h3>No upcoming events yet</h3>
+        <p>Check back soon. New events are added regularly.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section section--tint" aria-labelledby="steps-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">How it works</p>
+        <h2 id="steps-title">From first look to feedback</h2>
+      </div>
+    </div>
+    <ol class="steps">
+      <li>
+        <span class="steps__num">01</span>
+        <h3>Find an event</h3>
+        <p>Search by name, filter by category or pick a date to see what's on.</p>
+      </li>
+      <li>
+        <span class="steps__num">02</span>
+        <h3>Reserve your seat</h3>
+        <p>Register with one click. Seat counts update instantly, so you always know what's left.</p>
+      </li>
+      <li>
+        <span class="steps__num">03</span>
+        <h3>Share your thoughts</h3>
+        <p>Rate the events you attended and help organisers make the next one better.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="stats" aria-label="College event statistics">
+  <div class="container">
+    <dl class="stats__grid">
+      <div class="stats__item">
+        <dt>Total Events</dt>
+        <dd>{{ stats.events }}</dd>
+      </div>
+      <div class="stats__item">
+        <dt>Registered Students</dt>
+        <dd>{{ stats.students }}</dd>
+      </div>
+      <div class="stats__item">
+        <dt>Upcoming Events</dt>
+        <dd>{{ stats.upcoming }}</dd>
+      </div>
+      <div class="stats__item">
+        <dt>College Activities</dt>
+        <dd>{{ stats.activities }}</dd>
+        <p>seats booked so far</p>
+      </div>
+    </dl>
+  </div>
+</section>
+
+{% if not current_user %}
+<section class="section cta" aria-labelledby="cta-title">
+  <div class="container cta__inner">
+    <h2 id="cta-title">Your next favourite event is one click away.</h2>
+    <div class="cta__actions">
+      <a class="btn btn--primary btn--lg" id="cta-register" href="{{ url_for('register') }}">Create Account</a>
+      <a class="btn btn--outline btn--lg" id="cta-login" href="{{ url_for('login') }}">Login</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

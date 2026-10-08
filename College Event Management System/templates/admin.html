@@ -1,0 +1,264 @@
+{% extends "admin_base.html" %}
+{% from "_macros.html" import stars, status_badge, pager with context %}
+
+{# One template for four admin lists: tab = events | registrations | feedback | users #}
+
+{% set heading = {'events': 'Manage events', 'registrations': 'Event registrations', 'feedback': 'Student feedback', 'users': 'Users'}[tab] %}
+
+{% block title %}{{ heading }} | Admin{% endblock %}
+{% block admin_heading %}{{ heading }}{% endblock %}
+{% block admin_actions %}
+  {% if tab != 'users' %}
+    <a class="btn btn--primary" id="admin-add-event" href="{{ url_for('add_event') }}">{{ icon('plus') }}Add Event</a>
+  {% endif %}
+{% endblock %}
+
+{% block admin_content %}
+
+  {# ---------------- Events ---------------- #}
+  {% if tab == 'events' %}
+    <form class="filters filters--admin" id="admin-event-filter" method="get" action="{{ url_for('admin_events') }}" role="search">
+      <div class="filters__field filters__field--search">
+        <label for="f-q">Search</label>
+        <div class="input-affix input-affix--lead">
+          <span class="affix-icon">{{ icon('search') }}</span>
+          <input id="f-q" name="q" type="search" maxlength="100" value="{{ filters.q }}" placeholder="Title, category, venue or organizer" autocomplete="off">
+        </div>
+      </div>
+      <div class="filters__field">
+        <label for="f-category">Category</label>
+        <select id="f-category" name="category">
+          <option value="">All categories</option>
+          {% for name in categories %}<option value="{{ name }}" {{ 'selected' if filters.category == name }}>{{ name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="filters__field">
+        <label for="f-when">Status</label>
+        <select id="f-when" name="when">
+          <option value="">Upcoming + past</option>
+          <option value="upcoming" {{ 'selected' if filters.when == 'upcoming' }}>Upcoming</option>
+          <option value="past" {{ 'selected' if filters.when == 'past' }}>Past</option>
+        </select>
+      </div>
+      <div class="filters__field">
+        <label for="f-date">Date</label>
+        <input id="f-date" name="date" type="date" value="{{ filters.date }}">
+      </div>
+      <div class="filters__actions">
+        <button class="btn btn--dark" id="admin-filter-apply" type="submit">Apply</button>
+        <a class="btn btn--ghost" id="admin-filter-reset" href="{{ url_for('admin_events') }}">Reset</a>
+      </div>
+    </form>
+
+    <p class="results-count" aria-live="polite">{{ total }} event{{ '' if total == 1 else 's' }} found</p>
+
+    {% if events %}
+      <div class="table-wrap">
+        <table class="table table--stack" id="events-table">
+          <thead>
+            <tr>
+              <th scope="col">Event</th>
+              <th scope="col">Category</th>
+              <th scope="col">Date</th>
+              <th scope="col">Venue</th>
+              <th scope="col">Registrations</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in events %}
+              <tr>
+                <td data-label="Event">
+                  <div>
+                    <a class="table__primary" href="{{ url_for('admin_event_view', event_id=e.id) }}">{{ e.title }}</a>
+                    <small class="table__sub">by {{ e.organizer }}</small>
+                    <span class="badge-row">{{ status_badge(e) }}</span>
+                  </div>
+                </td>
+                <td data-label="Category"><span class="tag cat-{{ e.category|lower }}">{{ e.category }}</span></td>
+                <td data-label="Date">{{ e.date|fdate }}<small class="table__sub">{{ e.time|ftime }}</small></td>
+                <td data-label="Venue">{{ e.venue }}</td>
+                <td data-label="Registrations">
+                  <a href="{{ url_for('admin_event_registrations', event_id=e.id) }}">{{ e.registered_count }}</a> / {{ e.capacity }}
+                  <small class="table__sub">{{ e.available }} seat{{ '' if e.available == 1 else 's' }} left</small>
+                </td>
+                <td class="table__actions">
+                  <div class="row-actions">
+                    <a class="btn btn--outline btn--sm" href="{{ url_for('admin_event_view', event_id=e.id) }}" aria-label="View {{ e.title }}">{{ icon('eye') }}View</a>
+                    <a class="btn btn--outline btn--sm" href="{{ url_for('edit_event', event_id=e.id) }}" aria-label="Edit {{ e.title }}">{{ icon('edit') }}Edit</a>
+                    <a class="btn btn--outline btn--sm" href="{{ url_for('admin_event_registrations', event_id=e.id) }}" aria-label="Registrations for {{ e.title }}">{{ icon('users') }}Registrations</a>
+                    <form method="post" action="{{ url_for('delete_event', event_id=e.id) }}"
+                          data-confirm="Are you sure you want to delete this event?&#10;&#10;This action cannot be undone.{% if e.registered_count %}&#10;&#10;Its {{ e.registered_count }} registration{{ '' if e.registered_count == 1 else 's' }} and any feedback will also be deleted.{% endif %}">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="btn btn--danger btn--sm" type="submit" aria-label="Delete {{ e.title }}">{{ icon('trash') }}Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {{ pager(page, pages, 'admin_events', page_args) }}
+    {% else %}
+      <div class="empty">
+        {% if page_args %}
+          <h3>No events match your filters</h3>
+          <p>Try a different keyword, category, date or status.</p>
+          <a class="btn btn--outline" href="{{ url_for('admin_events') }}">Clear filters</a>
+        {% else %}
+          <h3>No events yet</h3>
+          <p>Create your first event to get started.</p>
+          <a class="btn btn--primary" href="{{ url_for('add_event') }}">Add Event</a>
+        {% endif %}
+      </div>
+    {% endif %}
+
+  {# ---------------- Registrations (all events) ---------------- #}
+  {% elif tab == 'registrations' %}
+    <form class="toolbar" method="get" action="{{ url_for('admin_registrations') }}" id="reg-filter">
+      <label for="event_id">Filter by event</label>
+      <select id="event_id" name="event_id" data-autosubmit>
+        <option value="">All events</option>
+        {% for e in all_events %}
+          <option value="{{ e.id }}" {{ 'selected' if selected == e.id }}>{{ e.title }} ({{ e.date|fdate }})</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn--dark btn--sm" type="submit">Apply</button>
+      {% if selected %}<a class="btn btn--ghost btn--sm" href="{{ url_for('admin_event_registrations', event_id=selected) }}">Seat summary</a>{% endif %}
+      <span class="toolbar__count">{{ rows|length }} registration{{ '' if rows|length == 1 else 's' }}</span>
+    </form>
+
+    {% if rows %}
+      <div class="table-wrap">
+        <table class="table table--stack" id="registrations-table">
+          <thead>
+            <tr>
+              <th scope="col">Student</th>
+              <th scope="col">Email</th>
+              <th scope="col">Event</th>
+              <th scope="col">Event Date</th>
+              <th scope="col">Registered On</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in rows %}
+              <tr>
+                <td data-label="Student"><span class="table__primary">{{ r.student_name }}</span></td>
+                <td data-label="Email">{{ r.email }}</td>
+                <td data-label="Event"><a href="{{ url_for('admin_event_registrations', event_id=r.event_id) }}">{{ r.title }}</a></td>
+                <td data-label="Event Date">{{ r.date|fdate }}</td>
+                <td data-label="Registered On">{{ r.registered_at|fdate }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty"><h3>No registrations found</h3><p>Students who register for events will appear here.</p></div>
+    {% endif %}
+
+  {# ---------------- Feedback ---------------- #}
+  {% elif tab == 'feedback' %}
+    <form class="toolbar" method="get" action="{{ url_for('admin_feedback') }}" id="feedback-filter">
+      <label for="fb_event">Filter by event</label>
+      <select id="fb_event" name="event_id" data-autosubmit>
+        <option value="">All events</option>
+        {% for e in all_events %}
+          <option value="{{ e.id }}" {{ 'selected' if selected == e.id }}>{{ e.title }} ({{ e.date|fdate }})</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn--dark btn--sm" type="submit">Apply</button>
+      <span class="toolbar__count">{{ rows|length }} review{{ '' if rows|length == 1 else 's' }}</span>
+      {% if average %}
+        <span class="toolbar__avg">{{ stars(average|round|int) }}<strong>{{ average }}</strong> average rating</span>
+      {% endif %}
+    </form>
+
+    {% if rows %}
+      <div class="table-wrap">
+        <table class="table table--stack" id="feedback-table">
+          <thead>
+            <tr>
+              <th scope="col">Student Name</th>
+              <th scope="col">Event</th>
+              <th scope="col">Rating</th>
+              <th scope="col">Comment</th>
+              <th scope="col">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in rows %}
+              <tr>
+                <td data-label="Student"><span class="table__primary">{{ f.student_name }}</span></td>
+                <td data-label="Event"><a href="{{ url_for('admin_event_view', event_id=f.event_id) }}">{{ f.title }}</a></td>
+                <td data-label="Rating">{{ stars(f.rating) }}</td>
+                <td data-label="Comment" class="table__comment">{{ f.comment or '-' }}</td>
+                <td data-label="Date">{{ f.created_at|fdate }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty"><h3>No feedback yet</h3><p>Reviews from students will show up here.</p></div>
+    {% endif %}
+
+  {# ---------------- Users ---------------- #}
+  {% else %}
+    <form class="filters filters--users" id="admin-user-filter" method="get" action="{{ url_for('admin_users') }}" role="search">
+      <div class="filters__field filters__field--search">
+        <label for="u-q">Search</label>
+        <div class="input-affix input-affix--lead">
+          <span class="affix-icon">{{ icon('search') }}</span>
+          <input id="u-q" name="q" type="search" maxlength="100" value="{{ filters.q }}" placeholder="Name or email" autocomplete="off">
+        </div>
+      </div>
+      <div class="filters__field">
+        <label for="u-role">Role</label>
+        <select id="u-role" name="role" data-autosubmit>
+          <option value="">All roles</option>
+          <option value="admin" {{ 'selected' if filters.role == 'admin' }}>Admin</option>
+          <option value="student" {{ 'selected' if filters.role == 'student' }}>Student</option>
+        </select>
+      </div>
+      <div class="filters__actions">
+        <button class="btn btn--dark" type="submit">Apply</button>
+        <a class="btn btn--ghost" href="{{ url_for('admin_users') }}">Reset</a>
+      </div>
+    </form>
+
+    <p class="results-count">{{ total }} user{{ '' if total == 1 else 's' }} found</p>
+
+    {% if rows %}
+      <div class="table-wrap">
+        <table class="table table--stack" id="users-table">
+          <thead>
+            <tr>
+              <th scope="col">Student Name</th>
+              <th scope="col">Email</th>
+              <th scope="col">Role</th>
+              <th scope="col">Registration Date</th>
+              <th scope="col">Event Registrations</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in rows %}
+              <tr>
+                <td data-label="Student"><span class="table__primary">{{ u.name }}</span></td>
+                <td data-label="Email">{{ u.email }}</td>
+                <td data-label="Role"><span class="badge {{ 'badge--admin' if u.role == 'admin' }}">{{ u.role }}</span></td>
+                <td data-label="Registered">{{ u.created_at|fdate }}</td>
+                <td data-label="Registrations">{{ u.registrations }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {{ pager(page, pages, 'admin_users', page_args) }}
+    {% else %}
+      <div class="empty"><h3>No users found</h3><p>Try a different name, email or role.</p>
+        <a class="btn btn--outline" href="{{ url_for('admin_users') }}">Clear filters</a></div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

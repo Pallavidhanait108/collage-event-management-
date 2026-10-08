@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account | College Events{% endblock %}
+{% block description %}Create a student account to register for college events and share feedback.{% endblock %}
+
+{% block content %}
+<div class="auth">
+  <aside class="auth__panel">
+    <p class="eyebrow">Join the community</p>
+    <p class="auth__quote">Make this term more than lectures.</p>
+    <ul class="auth__points">
+      <li>{{ icon('search') }}<span>Browse workshops, fests and competitions.</span></li>
+      <li>{{ icon('ticket') }}<span>Reserve a seat before it's gone.</span></li>
+      <li>{{ icon('star') }}<span>Review events and help shape the next ones.</span></li>
+    </ul>
+  </aside>
+
+  <section class="auth__form" aria-labelledby="register-title">
+    <div class="auth__card">
+      <h1 id="register-title">Create your account</h1>
+      <p class="auth__sub">It takes less than a minute.</p>
+
+      <form method="post" action="{{ url_for('register') }}" id="register-form" data-validate novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="field {{ 'is-invalid' if errors.name }}">
+          <label for="name">Full Name</label>
+          <input id="name" name="name" type="text" autocomplete="name" required maxlength="80"
+                 data-label="Full name" value="{{ form.name }}" aria-describedby="name-error">
+          <p class="field__error" id="name-error" role="alert">{{ errors.name }}</p>
+        </div>
+
+        <div class="field {{ 'is-invalid' if errors.email }}">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required
+                 data-label="Email" value="{{ form.email }}" aria-describedby="email-error" placeholder="you@college.com">
+          <p class="field__error" id="email-error" role="alert">{{ errors.email }}</p>
+        </div>
+
+        <div class="field {{ 'is-invalid' if errors.password }}">
+          <label for="password">Password</label>
+          <div class="input-affix">
+            <input id="password" name="password" type="password" autocomplete="new-password" required minlength="6"
+                   data-label="Password" aria-describedby="password-hint password-error">
+            <button class="affix-btn" type="button" data-toggle-password="password" aria-label="Show password" aria-pressed="false">
+              <span class="affix-btn__show">{{ icon('eye') }}</span>
+              <span class="affix-btn__hide">{{ icon('eye-off') }}</span>
+            </button>
+          </div>
+          <p class="field__hint" id="password-hint">At least 6 characters.</p>
+          <p class="field__error" id="password-error" role="alert">{{ errors.password }}</p>
+        </div>
+
+        <div class="field {{ 'is-invalid' if errors.confirm_password }}">
+          <label for="confirm_password">Confirm Password</label>
+          <div class="input-affix">
+            <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required
+                   data-label="Confirm password" data-match="password" aria-describedby="confirm_password-error">
+            <button class="affix-btn" type="button" data-toggle-password="confirm_password" aria-label="Show password" aria-pressed="false">
+              <span class="affix-btn__show">{{ icon('eye') }}</span>
+              <span class="affix-btn__hide">{{ icon('eye-off') }}</span>
+            </button>
+          </div>
+          <p class="field__error" id="confirm_password-error" role="alert">{{ errors.confirm_password }}</p>
+        </div>
+
+        <button class="btn btn--primary btn--lg btn--block" id="register-submit" type="submit">Create Account</button>
+      </form>
+
+      <p class="auth__switch">Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+    </div>
+  </section>
+</div>
+{% endblock %}

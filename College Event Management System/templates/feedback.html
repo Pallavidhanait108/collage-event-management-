@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% from "_macros.html" import stars with context %}
+
+{% block title %}Feedback | College Events{% endblock %}
+{% block description %}Rate the events you registered for and tell organisers about your experience.{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div class="container page-head__inner">
+    <div>
+      <p class="eyebrow">Feedback</p>
+      <h1>How was the event?</h1>
+    </div>
+  </div>
+</section>
+
+<div class="container feedback-layout">
+  <section class="form-card" aria-labelledby="fb-form-title">
+    <h2 class="block__title" id="fb-form-title">Share your experience</h2>
+
+    {% if registered %}
+      <form id="feedback-form" method="post" action="{{ url_for('submit_feedback') }}" data-validate novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="field">
+          <label for="event_id">Select Event</label>
+          <select id="event_id" name="event_id" required data-label="Event" aria-describedby="event_id-error">
+            <option value="" disabled {{ 'selected' if not selected }}>Choose an event</option>
+            {% for e in registered %}
+              <option value="{{ e.id }}" {{ 'selected' if selected == e.id }} {{ 'disabled' if e.reviewed }}>
+                {{ e.title }} ({{ e.date|fdate }}){{ ' - feedback submitted' if e.reviewed }}
+              </option>
+            {% endfor %}
+          </select>
+          <p class="field__error" id="event_id-error" role="alert"></p>
+        </div>
+
+        <fieldset class="field rating" id="rating-field" data-rating>
+          <legend>Rating</legend>
+          <div class="rating__stars">
+            {% for n in [5, 4, 3, 2, 1] %}
+              <input type="radio" name="rating" id="rating-{{ n }}" value="{{ n }}" required>
+              <label for="rating-{{ n }}" title="{{ n }} star{{ '' if n == 1 else 's' }}">
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-star"></use></svg>
+                <span class="visually-hidden">{{ n }} star{{ '' if n == 1 else 's' }}</span>
+              </label>
+            {% endfor %}
+          </div>
+          <p class="rating__text" id="rating-text" aria-live="polite">Select a rating</p>
+          <p class="field__error" id="rating-error" role="alert"></p>
+        </fieldset>
+
+        <div class="field">
+          <label for="comment">Comment <span class="optional">(optional)</span></label>
+          <textarea id="comment" name="comment" rows="5" maxlength="500" placeholder="Tell us about your experience..."></textarea>
+        </div>
+
+        <button class="btn btn--primary btn--lg" id="feedback-submit" type="submit">Submit Feedback</button>
+      </form>
+    {% else %}
+      <div class="empty empty--flat">
+        <h3>No events to review yet</h3>
+        <p>Once you register for an event, you can leave your feedback here.</p>
+        <a class="btn btn--primary" href="{{ url_for('events') }}">Browse events</a>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="feedback-history" aria-labelledby="fb-history-title">
+    <h2 class="block__title" id="fb-history-title">Your feedback</h2>
+    {% if mine %}
+      <ul class="review-list">
+        {% for f in mine %}
+          <li class="review">
+            <div class="review__top">
+              <strong>{{ f.title }}</strong>
+              {{ stars(f.rating) }}
+            </div>
+            {% if f.comment %}<p>{{ f.comment }}</p>{% endif %}
+            <small>{{ f.created_at|fdate }}</small>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">You haven't submitted any feedback yet.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

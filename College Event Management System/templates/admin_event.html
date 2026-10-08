@@ -1,0 +1,51 @@
+{% extends "admin_base.html" %}
+{% from "_macros.html" import stars, status_badge, seats with context %}
+
+{% block title %}{{ event.title }} | Admin{% endblock %}
+{% block admin_eyebrow %}Event details{% endblock %}
+{% block admin_heading %}{{ event.title }}{% endblock %}
+{% block admin_actions %}
+  <a class="btn btn--outline" href="{{ url_for('admin_events') }}">{{ icon('arrow-left') }}Back to events</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-detail cat-{{ event.category|lower }}">
+  <div>
+    <div class="detail__cover{{ ' has-image' if event.image else '' }}">
+      {% if event.image %}<img class="event-card__img" src="{{ event.image }}" alt="">{% endif %}
+      <span class="detail__date"><strong>{{ event.date|day }}</strong><span>{{ event.date|month }}</span></span>
+    </div>
+    <p class="badge-row">{{ status_badge(event) }}<span class="tag cat-{{ event.category|lower }}">{{ event.category }}</span></p>
+    <h2 class="detail__sub">Description</h2>
+    <p class="detail__desc">{{ event.description }}</p>
+    {% if rating %}
+      <p class="detail__rating">{{ stars(rating.average|round|int) }}
+        <span><strong>{{ rating.average }}</strong> average from {{ rating.total }} review{{ '' if rating.total == 1 else 's' }}</span></p>
+    {% endif %}
+  </div>
+
+  <aside class="admin-detail__side" aria-label="Event facts and actions">
+    <dl class="facts">
+      <div><dt>{{ icon('calendar') }}Date</dt><dd>{{ event.date|fdate_long }}</dd></div>
+      <div><dt>{{ icon('clock') }}Time</dt><dd>{{ event.time|ftime }}</dd></div>
+      <div><dt>{{ icon('pin') }}Venue</dt><dd>{{ event.venue }}</dd></div>
+      <div><dt>{{ icon('user') }}Organizer</dt><dd>{{ event.organizer }}</dd></div>
+      <div><dt>{{ icon('users') }}Seats</dt><dd>{{ event.registered_count }} of {{ event.capacity }} registered &middot; {{ event.available }} available</dd></div>
+      <div><dt>{{ icon('clock') }}Created</dt><dd>{{ event.created_at|fdate }}</dd></div>
+      <div><dt>{{ icon('edit') }}Last updated</dt><dd>{{ (event.updated_at or event.created_at)|fdate }}</dd></div>
+    </dl>
+    {{ seats(event) }}
+
+    <div class="detail__cta">
+      <a class="btn btn--dark btn--block" id="detail-edit" href="{{ url_for('edit_event', event_id=event.id) }}">{{ icon('edit') }}Edit event</a>
+      <a class="btn btn--outline btn--block" id="detail-registrations" href="{{ url_for('admin_event_registrations', event_id=event.id) }}">{{ icon('users') }}Registrations</a>
+      <a class="btn btn--outline btn--block" href="{{ url_for('event_detail', event_id=event.id) }}">{{ icon('eye') }}View public page</a>
+      <form method="post" action="{{ url_for('delete_event', event_id=event.id) }}"
+            data-confirm="Are you sure you want to delete this event?&#10;&#10;This action cannot be undone.{% if event.registered_count %}&#10;&#10;Its {{ event.registered_count }} registration{{ '' if event.registered_count == 1 else 's' }} and any feedback will also be deleted.{% endif %}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn--danger btn--block" id="detail-delete" type="submit">{{ icon('trash') }}Delete event</button>
+      </form>
+    </div>
+  </aside>
+</div>
+{% endblock %}

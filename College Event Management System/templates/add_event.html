@@ -1,0 +1,94 @@
+{% extends "admin_base.html" %}
+
+{% block title %}{{ 'Edit Event' if editing else 'Add Event' }} | College Events{% endblock %}
+{% block admin_eyebrow %}{{ 'Edit event' if editing else 'New event' }}{% endblock %}
+{% block admin_heading %}{{ 'Edit event' if editing else 'Create a new event' }}{% endblock %}
+{% block admin_actions %}
+  <a class="btn btn--outline" href="{{ url_for('admin_events') }}">{{ icon('arrow-left') }}Back to events</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="form-page">
+  <form class="form-card" id="event-form" method="post"
+        action="{{ url_for('edit_event', event_id=event.id) if editing else url_for('add_event') }}"
+        data-validate novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="form-grid">
+      <div class="field field--full {{ 'is-invalid' if errors.title }}">
+        <label for="title">Event Title</label>
+        <input id="title" name="title" type="text" required maxlength="120" data-label="Event title"
+               value="{{ form.title }}" aria-describedby="title-error">
+        <p class="field__error" id="title-error" role="alert">{{ errors.title }}</p>
+      </div>
+
+      <div class="field field--full {{ 'is-invalid' if errors.description }}">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="5" required maxlength="2000" data-label="Description"
+                  aria-describedby="description-error">{{ form.description }}</textarea>
+        <p class="field__error" id="description-error" role="alert">{{ errors.description }}</p>
+      </div>
+
+      <div class="field {{ 'is-invalid' if errors.date }}">
+        <label for="date">Date</label>
+        <input id="date" name="date" type="date" required data-label="Date" value="{{ form.date }}" aria-describedby="date-error">
+        <p class="field__error" id="date-error" role="alert">{{ errors.date }}</p>
+      </div>
+
+      <div class="field {{ 'is-invalid' if errors.time }}">
+        <label for="time">Time</label>
+        <input id="time" name="time" type="time" required data-label="Time" value="{{ form.time }}" aria-describedby="time-error">
+        <p class="field__error" id="time-error" role="alert">{{ errors.time }}</p>
+      </div>
+
+      <div class="field {{ 'is-invalid' if errors.venue }}">
+        <label for="venue">Venue</label>
+        <input id="venue" name="venue" type="text" required maxlength="100" data-label="Venue" value="{{ form.venue }}" aria-describedby="venue-error">
+        <p class="field__error" id="venue-error" role="alert">{{ errors.venue }}</p>
+      </div>
+
+      <div class="field {{ 'is-invalid' if errors.organizer }}">
+        <label for="organizer">Organizer</label>
+        <input id="organizer" name="organizer" type="text" required maxlength="100" data-label="Organizer" value="{{ form.organizer }}" aria-describedby="organizer-error">
+        <p class="field__error" id="organizer-error" role="alert">{{ errors.organizer }}</p>
+      </div>
+
+      <div class="field {{ 'is-invalid' if errors.category }}">
+        <label for="category">Category</label>
+        <select id="category" name="category" required data-label="Category" aria-describedby="category-error">
+          <option value="" disabled {{ 'selected' if not form.category }}>Select a category</option>
+          {% for name in categories %}
+            <option value="{{ name }}" {{ 'selected' if form.category == name }}>{{ name }}</option>
+          {% endfor %}
+        </select>
+        <p class="field__error" id="category-error" role="alert">{{ errors.category }}</p>
+      </div>
+
+      <div class="field {{ 'is-invalid' if errors.capacity }}">
+        <label for="capacity">Capacity</label>
+        <input id="capacity" name="capacity" type="number" min="1" max="100000" step="1" required data-label="Capacity"
+               value="{{ form.capacity }}" aria-describedby="capacity-hint capacity-error">
+        {% if editing and event.registered_count %}
+          <p class="field__hint" id="capacity-hint">{{ event.registered_count }} student{{ '' if event.registered_count == 1 else 's' }} already registered.</p>
+        {% else %}
+          <p class="field__hint" id="capacity-hint">Total number of seats.</p>
+        {% endif %}
+        <p class="field__error" id="capacity-error" role="alert">{{ errors.capacity }}</p>
+      </div>
+
+      <div class="field field--full {{ 'is-invalid' if errors.image }}">
+        <label for="image">Image URL <span class="optional">(optional)</span></label>
+        <input id="image" name="image" type="text" inputmode="url" data-label="Image URL" data-url
+               value="{{ form.image or '' }}" placeholder="https://example.com/poster.jpg" aria-describedby="image-hint image-error">
+        <p class="field__hint" id="image-hint">Leave empty to use the colour cover for the category.</p>
+        <p class="field__error" id="image-error" role="alert">{{ errors.image }}</p>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn--primary btn--lg" id="event-submit" type="submit">{{ 'Save Changes' if editing else 'Create Event' }}</button>
+      <a class="btn btn--ghost btn--lg" href="{{ url_for('admin_events') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
