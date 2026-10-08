@@ -32,7 +32,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 # 1. Configuration
 # ---------------------------------------------------------------------------
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-DATABASE = os.environ.get("DATABASE_PATH", os.path.join(BASE_DIR, "database.db"))
+# On Vercel the filesystem is read-only except for /tmp.
+_IS_VERCEL = os.environ.get("VERCEL") == "1"
+_WRITABLE_DIR = "/tmp" if _IS_VERCEL else BASE_DIR
+DATABASE = os.environ.get("DATABASE_PATH", os.path.join(_WRITABLE_DIR, "database.db"))
 
 
 def load_secret_key():
@@ -44,7 +47,7 @@ def load_secret_key():
     key = os.environ.get("SECRET_KEY")
     if key:
         return key
-    path = os.path.join(BASE_DIR, "instance", "secret_key")
+    path = os.path.join(_WRITABLE_DIR, "secret_key")
     try:
         if os.path.exists(path):
             with open(path, encoding="utf-8") as handle:
